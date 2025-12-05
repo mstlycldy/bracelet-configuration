@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Bracelet Config Panel</title>
+  <style>
+    body { font-family: Arial; max-width: 500px; margin: auto; padding: 20px; }
+    label { font-weight: bold; display: block; margin-top: 15px; }
+    input { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 20px; padding: 10px; width: 100%; font-size: 16px; }
+  </style>
+</head>
+<body>
+
+<h2>Bracelet Settings</h2>
+
+<label>Update Interval (sec)</label>
+<input id="update_interval" type="number">
+
+<label>Safe Radius (meters)</label>
+<input id="safe_radius" type="number">
+
+<label>Safe Latitude</label>
+<input id="safe_lat" type="text">
+
+<label>Safe Longitude</label>
+<input id="safe_lon" type="text">
+
+<button onclick="save()">Save Settings</button>
+
+<script>
+const repo = "mstlycldy/bracelet-config";
+const filePath = "config.json";
+const token = "YOUR_TOKEN_HERE";  // I’ll show you how to create this
+
+async function save() {
+    const data = {
+        update_interval: Number(document.getElementById("update_interval").value),
+        safe_radius: Number(document.getElementById("safe_radius").value),
+        safe_lat: Number(document.getElementById("safe_lat").value),
+        safe_lon: Number(document.getElementById("safe_lon").value)
+    };
+
+    const file = await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+        headers: { Authorization: `Bearer ${token}` }
+    }).then(r => r.json());
+
+    await fetch(`https://api.github.com/repos/${repo}/contents/${filePath}`, {
+        method: "PUT",
+        headers: { 
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            message: "Update config",
+            content: btoa(JSON.stringify(data, null, 2)),
+            sha: file.sha
+        })
+    });
+
+    alert("Settings saved!");
+}
+</script>
+
+</body>
+</html>
